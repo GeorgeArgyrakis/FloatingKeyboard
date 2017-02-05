@@ -17,3 +17,6 @@ Optional but highly recommended:
 1. Set a transparent background `android:background="@android:color/transparent"`
 2. Disable text shadow `android:shadowRadius="0.0"`
 3. Make a drawable selector and use as a key background `android:keyBackground="@drawable/keyback"`
+
+## About
+Based on the following great guide from Maarten Pennings (http://www.fampennings.nl/maarten/android/09keyboard/)

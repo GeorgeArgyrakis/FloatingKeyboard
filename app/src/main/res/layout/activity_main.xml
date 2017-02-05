@@ -8,7 +8,17 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="info.gargy.floatingkeyboard.MainActivity">
+    >
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/edittext1"
+        android:inputType="numberDecimal"
+        android:selectAllOnFocus="true"
+        android:textIsSelectable="true"
+        android:hint="Type here"
+    />
 
     <info.gargy.floatingkeyboardview.FloatingKeyboardView
         android:id="@+id/keyboardview"
@@ -21,16 +31,8 @@
         android:keyBackground="@drawable/keyback"
         android:shadowRadius="0.0"
         android:background="@android:color/transparent"
-    />
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/edittext1"
-        android:inputType="numberDecimal"
-        android:selectAllOnFocus="true"
-        android:textIsSelectable="true"
-        android:hint="Type here"
-    />
+        android:elevation="1dp"
+        />
 
 
 </RelativeLayout>

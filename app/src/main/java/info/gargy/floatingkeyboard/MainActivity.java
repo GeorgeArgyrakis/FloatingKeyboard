@@ -16,5 +16,6 @@ public class MainActivity extends AppCompatActivity {
         mCustomKeyboard.setKeyboard(new Keyboard(this, R.xml.numkbd));
         mCustomKeyboard.setPreviewEnabled(false); // NOTE Do not show the preview balloons
         mCustomKeyboard.registerEditText(R.id.edittext1);
+        mCustomKeyboard.positionTo(30,30);
     }
 }

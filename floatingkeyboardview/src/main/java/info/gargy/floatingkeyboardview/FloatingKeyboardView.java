@@ -100,6 +100,8 @@ public class FloatingKeyboardView extends KeyboardView {
         mHandlePath.lineTo(2 * width / 3, topPaddingPx - 25);
         mHandlePath.lineTo(width, topPaddingPx - 25);
         mHandlePath.lineTo(width, topPaddingPx);
+        // Draw this line twice to fix strange artifact in API21
+        mHandlePath.lineTo(width, topPaddingPx);
     }
 
 
@@ -196,41 +198,9 @@ public class FloatingKeyboardView extends KeyboardView {
         int moveToX;
         int distY;
         int distX;
-        Rect inScreenCoordinates;
         boolean handleTouched = false;
 
-        /**
-         * @param topMargin of desired position
-         * @param leftMargin of desired position
-         * @return a Rect with corrected positions so the whole view to stay in screen
-         */
-        private Rect keepInScreen(int topMargin, int leftMargin) {
-            int top = topMargin;
-            int left = leftMargin;
-            int height = getHeight();
-            int width = getWidth();
-            //TODO: Try to explain this !!!
-            int rightCorrection = ((View) getParent()).getPaddingRight() + ((View) getParent()).getPaddingLeft();
-            int botomCorrection = ((View) getParent()).getPaddingBottom() + ((View) getParent()).getPaddingTop();
 
-            Rect rootBounds = new Rect();
-            ((View) getParent()).getHitRect(rootBounds);
-            rootBounds.set(rootBounds.left,rootBounds.top,rootBounds.right-rightCorrection,rootBounds.bottom-botomCorrection);
-
-            if (top <= rootBounds.top)
-                top = rootBounds.top;
-            else if (top + height > rootBounds.bottom)
-                top = rootBounds.bottom - height;
-
-            if (left <= rootBounds.left)
-                left = rootBounds.left;
-            else if (left + width > rootBounds.right)
-                left = rootBounds.right - width;
-
-//            Log.e("x0:"+rootBounds.left+" y0:"+rootBounds.top+" Sx:"+rootBounds.right+" Sy:"+rootBounds.bottom, "INPUT:left:"+leftMargin+" top:"+topMargin+
-//                    " OUTPUT:left:"+left+" top:"+top+" right:"+(left + getWidth())+" bottom:"+(top + getHeight()));
-            return new Rect(left, top, left + width, top + height);
-        }
 
         @Override
         public boolean onTouch(View view, MotionEvent event) {
@@ -252,10 +222,7 @@ public class FloatingKeyboardView extends KeyboardView {
                             moveToY = moveToY - Integer.signum(distY) * Math.min(MOVE_THRESHOLD, Math.abs(distY));
                             moveToX = moveToX - Integer.signum(distX) * Math.min(MOVE_THRESHOLD, Math.abs(distX));
 
-                            inScreenCoordinates = keepInScreen(moveToY, moveToX);
-                            params.topMargin = inScreenCoordinates.top;
-                            params.leftMargin = inScreenCoordinates.left;
-                            view.setLayoutParams(params);
+                            moveTo(moveToY,moveToX);
                         }
                         performClick = false;
                     } else {
@@ -295,7 +262,59 @@ public class FloatingKeyboardView extends KeyboardView {
             }
             return !performClick;
         }
+
+
     };
+
+    private void moveTo(int y, int x) {
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) getLayoutParams();;
+//        Rect inScreenCoordinates = keepInScreen(y, x);
+        params.topMargin = y;//inScreenCoordinates.top;
+        params.leftMargin =x;// inScreenCoordinates.left;
+        setLayoutParams(params);
+    }
+
+    /**
+     * Position keyboard to specific point. Caution do not move it outside screen.
+     * @param x
+     * @param y
+     */
+    public void positionTo(int x, int y) {
+        moveTo (y,x);
+    }
+    /**
+     * @param topMargin of desired position
+     * @param leftMargin of desired position
+     * @return a Rect with corrected positions so the whole view to stay in screen
+     */
+    private Rect keepInScreen(int topMargin, int leftMargin) {
+        int top = topMargin;
+        int left = leftMargin;
+        measure(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        int height = getMeasuredHeight();
+        int width = getMeasuredWidth();
+        //TODO: Try to explain this !!!
+        int rightCorrection = ((View) getParent()).getPaddingRight() + ((View) getParent()).getPaddingLeft();
+        int botomCorrection = ((View) getParent()).getPaddingBottom() + ((View) getParent()).getPaddingTop();
+
+        Rect rootBounds = new Rect();
+        ((View) getParent()).getHitRect(rootBounds);
+        rootBounds.set(rootBounds.left,rootBounds.top,rootBounds.right-rightCorrection,rootBounds.bottom-botomCorrection);
+
+        if (top <= rootBounds.top)
+            top = rootBounds.top;
+        else if (top + height > rootBounds.bottom)
+            top = rootBounds.bottom - height;
+
+        if (left <= rootBounds.left)
+            left = rootBounds.left;
+        else if (left + width > rootBounds.right)
+            left = rootBounds.right - width;
+
+//            Log.e("x0:"+rootBounds.left+" y0:"+rootBounds.top+" Sx:"+rootBounds.right+" Sy:"+rootBounds.bottom, "INPUT:left:"+leftMargin+" top:"+topMargin+
+//                    " OUTPUT:left:"+left+" top:"+top+" right:"+(left + getWidth())+" bottom:"+(top + getHeight()));
+        return new Rect(left, top, left + width, top + height);
+    }
 
     /**
      * This method converts dp unit to equivalent pixels, depending on device density.

@@ -198,6 +198,7 @@ public class FloatingKeyboardView extends KeyboardView {
         int moveToX;
         int distY;
         int distX;
+        Rect inScreenCoordinates;
         boolean handleTouched = false;
 
 
@@ -222,7 +223,10 @@ public class FloatingKeyboardView extends KeyboardView {
                             moveToY = moveToY - Integer.signum(distY) * Math.min(MOVE_THRESHOLD, Math.abs(distY));
                             moveToX = moveToX - Integer.signum(distX) * Math.min(MOVE_THRESHOLD, Math.abs(distX));
 
-                            moveTo(moveToY,moveToX);
+                            inScreenCoordinates = keepInScreen(moveToY, moveToX);
+                            params.topMargin = inScreenCoordinates.top;
+                            params.leftMargin = inScreenCoordinates.left;
+                            view.setLayoutParams(params);
                         }
                         performClick = false;
                     } else {

@@ -34,13 +34,13 @@ import android.text.Editable;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 
 /**
  * A Floating and Draggable KeyboardView. Several EditText's can register for it.
@@ -61,6 +61,7 @@ public class FloatingKeyboardView extends KeyboardView {
     private static int width;
     private static Path mHandlePath;
     private static Paint mHandlePaint;
+    private static boolean allignBottomCenter =false;
 
     /**
      * Create a custom keyboardview
@@ -86,11 +87,57 @@ public class FloatingKeyboardView extends KeyboardView {
 
     }
 
+    public static boolean isAllignBottomCenter() {
+        return allignBottomCenter;
+    }
+
+    public static void setAllignBottomCenter(boolean allignBottomCenter) {
+        FloatingKeyboardView.allignBottomCenter = allignBottomCenter;
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (isAllignBottomCenter()) {
+            RelativeLayout.LayoutParams relativeLayoutParams = (RelativeLayout.LayoutParams) getLayoutParams();
+            relativeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            relativeLayoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+            setLayoutParams(relativeLayoutParams);
+        }
+    }
+
     @Override
     public void onSizeChanged(int xNew, int yNew, int xOld, int yOld) {
         super.onSizeChanged(xNew, yNew, xOld, yOld);
         width = xNew;
+        drawHandle();
+// Position Bottom Center
+        if (isAllignBottomCenter()) {
+            transformAllignBottomCenterRules();
+        }
+    }
 
+    /**
+     * Transform relativeLAoyout rules to position
+     */
+    private void transformAllignBottomCenterRules() {
+        RelativeLayout.LayoutParams relativeLayoutParams = (RelativeLayout.LayoutParams) getLayoutParams();
+
+        // Get initial position
+        int y = (int) getY();
+        int x = (int) getX();
+        // Remove realtivelayoyt alligment
+        relativeLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, 0);
+        relativeLayoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 0);
+
+        // Add initial position as margins
+        ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) getLayoutParams();
+        params.topMargin = y - ((View) getParent()).getPaddingTop();
+        params.leftMargin = x - ((View) getParent()).getPaddingLeft();
+        setLayoutParams(params);
+    }
+
+    private void drawHandle() {
         mHandlePath.rewind();
         mHandlePath.moveTo(0, topPaddingPx);
         mHandlePath.lineTo(0, topPaddingPx - 25);

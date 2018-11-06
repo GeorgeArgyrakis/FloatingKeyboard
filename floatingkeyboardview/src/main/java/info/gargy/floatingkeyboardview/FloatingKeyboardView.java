@@ -30,17 +30,18 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
+import android.os.Build;
 import android.text.Editable;
-import android.text.InputType;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+
+import java.lang.reflect.Method;
 
 /**
  * A Floating and Draggable KeyboardView. Several EditText's can register for it.
@@ -156,10 +157,6 @@ public class FloatingKeyboardView extends KeyboardView {
 //        params.topMargin = v.getTop() + v.getHeight();
 //        params.leftMargin = v.getLeft();
 //        setLayoutParams(params);
-
-        if (v != null)
-            ((InputMethodManager) getContext().getSystemService(Activity.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(v.getWindowToken(), 0);
-
     }
 
     /**
@@ -195,19 +192,22 @@ public class FloatingKeyboardView extends KeyboardView {
                 show(v);
             }
         });
+
         // Disable standard keyboard hard way
-        // NOTE There is also an easy way: 'edittext.setInputType(InputType.TYPE_NULL)' (but you will not have a cursor, and no 'edittext.setCursorVisible(true)' doesn't work )
-        edittext.setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                EditText edittext = (EditText) v;
-                int inType = edittext.getInputType();       // Backup the input type
-                edittext.setInputType(InputType.TYPE_NULL); // Disable standard keyboard
-                edittext.onTouchEvent(event);               // Call native handler
-                edittext.setInputType(inType);              // Restore input type
-                return true; // Consume touch event
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            edittext.setShowSoftInputOnFocus(false);
+        } else {
+            //For sdk versions [14-20]
+            try {
+                final Method method = EditText.class.getMethod(
+                        "setShowSoftInputOnFocus"
+                        , new Class[]{boolean.class});
+                method.setAccessible(true);
+                method.invoke(edittext, false);
+            } catch (Exception e) {
+                // ignore
             }
-        });
+        }
 
     }
 
